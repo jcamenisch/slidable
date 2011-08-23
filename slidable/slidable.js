@@ -1,24 +1,18 @@
 (function($){
 
-  spriteButton = function(kind, width, height, img) {
-    width = width || 24;
-    height = height || width;
-    img = img || '/javascripts/slidable/slidable.png';
-    kindIndexes = {
-      prev: 0,
-      next: 1
-    }
-    return $('<button />')
-      .addClass(kind)
-      .css({
-        width: (width || 24)+'px',
-        height: (height || width || 24)+'px',
-        backgroundColor: 'transparent',
-        backgroundImage: 'url("'+img+'") ',
-        backgroundRepeat: 'no-repeat',
-        backgroundPosition: -width * kindIndexes[kind] +'px 0px',
-        border: 'none'
-      });
+  spriteButton = function(kind, css) {
+    css = $.extend({
+      width: '24px',
+      height: '24px',
+      backgroundColor: 'transparent',
+      backgroundImage: 'url("/javascripts/slidable/slidable.png")',
+      backgroundRepeat: 'no-repeat',
+      border: 'none'
+    }, css);
+    width = +css.width.replace(/[^0-9]/g,'');
+    var kindPositions = { prev: 0, next: 1 };
+    css.backgroundPosition = -width * kindPositions[kind] + 'px 0px';
+    return $('<button />').addClass(kind).css(css);
   }
 
   $.fn.slidable = function(options){
@@ -115,24 +109,25 @@
         }
 
         if (horizontal) {
-          list.prevButton = wrapper.prepend(spriteButton('prev')).children().first()
+          list.prevButton = wrapper.prepend(spriteButton('prev', options.css.buttons)).children().first()
             .css({
               position: 'absolute',
               top: '50%',
-              marginTop: '-12px',
-              left: '-25px'
+              marginTop: '-12px'
+              
             })
             .data('list',list)
             .click(function(e){ $(this).data('list').scroll_by(-1) });
-          list.nextButton = wrapper.append(spriteButton('next')).children().last()
+          list.prevButton.css('left', '-'+list.prevButton.outerWidth()+'px')
+          list.nextButton = wrapper.append(spriteButton('next', options.css.buttons)).children().last()
             .css({
               position: 'absolute',
               top: '50%',
-              marginTop: '-12px',
-              right: '-25px'
+              marginTop: '-12px'
             })
             .data('list',list)
             .click(function(e){ $(this).data('list').scroll_by(1) });
+          list.nextButton.css('right', '-'+list.prevButton.outerWidth()+'px')
           list.scroll_to(0); // Disable prev button and, if need be, next button.
         }
       }

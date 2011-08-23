@@ -72,7 +72,7 @@
         options.css.viewport
       ));
 
-      options = jQuery.extend({
+      options = $.extend({
         duration: 300 + 2 * items.outerWidth()
       }, options);
       list.options = options;

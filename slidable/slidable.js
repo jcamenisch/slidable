@@ -2,16 +2,22 @@
 
   spriteButton = function(kind, css) {
     css = $.extend({
+      position: 'absolute',
+      top: '50%',
       width: '24px',
       height: '24px',
+      padding: '0',
+      border: 'none',
       backgroundColor: 'transparent',
       backgroundImage: 'url("/javascripts/slidable/slidable.png")',
       backgroundRepeat: 'no-repeat',
       border: 'none'
     }, css);
     width = +css.width.replace(/[^0-9]/g,'');
+    height = +css.height.replace(/[^0-9]/g,'');
     var kindPositions = { prev: 0, next: 1 };
     css.backgroundPosition = -width * kindPositions[kind] + 'px 0px';
+    css.marginTop = css.marginTop || Math.round(-height/2) + 'px';
     return $('<button />').addClass(kind).css(css);
   }
 
@@ -57,14 +63,20 @@
         vertical = ('vertical' in options) ? options.vertical : (itemsHigh > itemsWide && !options.horizontal),
         horizontal = !vertical
 
-      list.css($.extend({
-        width: vertical ?
-          wrapper.width() :
-          items.outerWidth() * Math.ceil(items.length/itemsHigh),
-        height: horizontal ?
-          wrapper.height() :
-          items.outerHeight() * Math.ceil(items.length/itemsWide)
-      }, options.css.list ));
+      list.css($.extend({width: wrapper.width(), height: wrapper.height()}, options.css.list));
+      if (horizontal) {
+        list.css('width', Math.max(
+          +(options.css.list.width || '0').replace(/[^0-9]/g,''),
+          wrapper.width(),
+          items.outerWidth() * Math.ceil(items.length/itemsHigh
+        )));
+      } else {
+        list.css('height', Math.max(
+          +(options.css.list.height || '0').replace(/[^0-9]/g,''),
+          wrapper.height(),
+          items.outerHeight() * Math.ceil(items.length/itemsWide
+        )));
+      }
       viewport.css(options.css.viewport = $.extend({
         width: items.outerWidth() * itemsWide + 'px'
       }, options.css.viewport ));
@@ -112,20 +124,11 @@
 
         if (horizontal) {
           list.prevButton = wrapper.prepend(spriteButton('prev', options.css.buttons)).children().first()
-            .css({
-              position: 'absolute',
-              top: '50%',
-              marginTop: '-12px'
-            })
             .data('list',list)
             .click(function(e){ $(this).data('list').scroll_back() });
-          list.prevButton.css('left', '-'+list.prevButton.outerWidth()+'px')
+          list.prevButton.css('left', '-'+list.prevButton.outerWidth()+'px');
+          
           list.nextButton = wrapper.append(spriteButton('next', options.css.buttons)).children().last()
-            .css({
-              position: 'absolute',
-              top: '50%',
-              marginTop: '-12px'
-            })
             .data('list',list)
             .click(function(e){ $(this).data('list').scroll_forward() });
           list.nextButton.css('right', '-'+list.prevButton.outerWidth()+'px')

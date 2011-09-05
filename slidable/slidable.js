@@ -1,3 +1,53 @@
+//Optional parameter includeMargin is used when calculating outer dimensions
+(function($) {
+  // Thanks Tim Banks, http://www.foliotek.com/devblog/getting-the-width-of-a-hidden-element-with-jquery-using-width/
+  $.fn.getHiddenDimensions = function(includeMargin) {
+    var $item = this,
+      props_for_width = { height: '0', visibility: 'hidden', display: 'block' },
+      props_for_height = { position: 'absolute', visibility: 'hidden', display: 'block' },
+      dim = { width:0, height:0, innerWidth: 0, innerHeight: 0,outerWidth: 0,outerHeight: 0 },
+      $hiddenParents = $item.parents().andSelf().not(':visible'),
+      includeMargin = (includeMargin == null)? false : includeMargin;
+
+    var oldProps = [];
+    $hiddenParents.each(function() {
+      var old = {};
+
+      for ( var name in props_for_height ) {
+        old[ name ] = this.style[ name ];
+      }
+      for ( var name in props_for_width ) {
+        old[ name ] = this.style[ name ];
+        this.style[ name ] = props_for_width[ name ];
+      }
+
+      oldProps.push(old);
+    });
+
+    dim.width = $item.width();
+    dim.outerWidth = $item.outerWidth(includeMargin);
+    dim.innerWidth = $item.innerWidth();
+
+    $hiddenParents.each(function() {
+      for ( var name in props_for_height ) {
+        this.style[ name ] = props_for_height[ name ];
+      }
+    });
+
+    dim.height = $item.height();
+    dim.innerHeight = $item.innerHeight();
+    dim.outerHeight = $item.outerHeight(includeMargin);
+
+    $hiddenParents.each(function(i) {
+      for ( var name in oldProps[i] ) {
+        this.style[ name ] = oldProps[i][ name ];
+      }
+    });
+
+    return dim;
+}
+}(jQuery));
+
 (function($){
 
   spriteButton = function(kind, css) {
@@ -25,7 +75,6 @@
     var options = $.extend({css: {}}, options);
     options.css.items = options.css.items || {};
     options.css.wrapper = $.extend({
-      width: '100%',
       overflow: 'hidden',
       position: 'relative',
       overflow: 'visible'
@@ -58,18 +107,19 @@
       }, options.css.wrapper ));
 
       var
-        itemsWide = Math.round(wrapper.width()/items.outerWidth()),
+        wrapper_width = wrapper.width() || wrapper.getHiddenDimensions().width
+        itemsWide = Math.round(wrapper_width/items.outerWidth()),
         itemsHigh = Math.round(wrapper.height()/items.outerHeight()),
         vertical = ('vertical' in options) ? options.vertical : (itemsHigh > itemsWide && !options.horizontal),
         horizontal = !vertical
 
-      list.css($.extend({width: wrapper.width(), height: wrapper.height()}, options.css.list));
+      list.css($.extend({width: wrapper_width, height: wrapper.height()}, options.css.list));
       if (horizontal) {
         list.css('width', Math.max(
           +(options.css.list.width || '0').replace(/[^0-9]/g,''),
-          wrapper.width(),
-          items.outerWidth() * Math.ceil(items.length/itemsHigh
-        )));
+          wrapper_width,
+          items.outerWidth() * Math.ceil(items.length/itemsHigh)
+        ));
       } else {
         list.css('height', Math.max(
           +(options.css.list.height || '0').replace(/[^0-9]/g,''),

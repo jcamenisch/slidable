@@ -15,6 +15,6 @@ Status
 
 Any plugin included here exists because I needed it for a production site.
 Thus, each of them has been tested in at least one site. However, use at
-your own risk. If you understand and like the way they're coded, please
+your own risk. If you understand and like the way it's coded, please
 make use of it, modify anything you need to, and send pull requests for 
 any improvements that others might find useful.

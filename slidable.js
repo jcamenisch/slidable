@@ -72,8 +72,8 @@
             disable = !!disable
             if (disable !== was_disabled) {
               button.attr('disabled', disable);
-              if (disable) button.addClass('.disabled');
-              else button.removeClass('.disabled');
+              if (disable) button.addClass('disabled');
+              else button.removeClass('disabled');
             }
           }
           list.scrollTo = function(position, wrap) {

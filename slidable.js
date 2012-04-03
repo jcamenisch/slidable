@@ -36,26 +36,6 @@
   }
 
   var spriteButton = function(kind, css) {
-    css = $.extend({
-      position: 'absolute',
-      top: '50%',
-      width: '24px',
-      height: '24px',
-      padding: '0',
-      border: 'none',
-      backgroundColor: 'transparent',
-      backgroundImage: 'url("slidable.png")',
-      backgroundRepeat: 'no-repeat',
-      backgroundSize: 'auto auto',
-      border: 'none',
-      zIndex: '1'
-    }, css);
-    width = +css.width.replace(/[^0-9]/g,'');
-    height = +css.height.replace(/[^0-9]/g,'');
-
-    css.backgroundPosition = -width * {prev: 0, next: 1}[kind] + 'px 0px';
-    css.marginTop = css.marginTop || Math.round(-height/2) + 'px';
-    css[{prev: 'left',next: 'right'}[kind]] = -width + 'px';
     return $('<button />').addClass(kind).css(css);
   }
 
@@ -121,24 +101,17 @@
         else
           columns = Math.ceil(items.size()/rows);
 
-        wrapper.css($.extend(
-          { height: rows * itemHeight},
-          options.css.wrapper
-        ));
+        wrapper.css(options.css.wrapper);
         
         var default_list_css = vertical ?
           {
-            width: itemWidth * itemsWide,
-            height: itemHeight * Math.max(rows, itemsHigh)
+            width: itemWidth * itemsWide
           } : {
-            width: itemWidth * Math.max(columns, itemsWide),
-            height: itemHeight * itemsHigh
+            width: itemWidth * Math.max(columns, itemsWide)
           }
         ;
         list.css($.extend(default_list_css, options.css.list));
-        viewport.css(options.css.viewport = $.extend({
-          width: itemWidth * itemsWide + 'px'
-        }, options.css.viewport ));
+        viewport.css(options.css.viewport);
 
         list.slide_increment = options.slide_increment || 1;
         list.slide_position = 0;
@@ -220,35 +193,37 @@
           }
         }
 
-        if (list.options.pager) list.pager = $(list.options.pager, list.parent().parent().parent());
-        if (list.pager.length && list.max_slide_position) {
-          var
-            pager = list.pager,
-            button_el = pager.is('ul') ? 'li' : 'span',
-            positions = [], last_position = list.max_slide_position
-          ;
+        if (list.options.pager) {
+          list.pager = $(list.options.pager, list.parent().parent().parent());
+          if (list.pager.length && list.max_slide_position) {
+            var
+              pager = list.pager,
+              button_el = pager.is('ul') ? 'li' : 'span',
+              positions = [], last_position = list.max_slide_position
+            ;
 
-          for (var i = 0; i < last_position; i += list.slide_increment) positions.push(i);
-          positions.push(last_position);
-          $.each(positions, function(i, position) {
-            var button = $('<'+button_el+' />'), a = $('<a />');
-            a.attr({
-              href: '#position-'+position,
-              'class': position === 0 ? 'active' : '',
-              'data-index': position
+            for (var i = 0; i < last_position; i += list.slide_increment) positions.push(i);
+            positions.push(last_position);
+            $.each(positions, function(i, position) {
+              var button = $('<'+button_el+' />'), a = $('<a />');
+              a.attr({
+                href: '#position-'+position,
+                'class': position === 0 ? 'active' : '',
+                'data-index': position
+              });
+              a.click(function(){
+                list.scrollTo($(this).data('index'));
+                list.autoRotate(false);
+                return false;
+              });
+              a.appendTo(button);
+              button.appendTo(pager);
             });
-            a.click(function(){
-              list.scrollTo($(this).data('index'));
-              list.autoRotate(false);
-              return false;
-            });
-            a.appendTo(button);
-            button.appendTo(pager);
-          });
 
-          list.options.beforeScroll = function(position){
-            $('.active', pager).removeClass('active');
-            $('a[data-index='+(position)+']', pager).addClass('active');
+            list.options.beforeScroll = function(position){
+              $('.active', pager).removeClass('active');
+              $('a[data-index='+(position)+']', pager).addClass('active');
+            }
           }
         }
         list.autoRotate = function(delay){

@@ -1,0 +1,23 @@
+.slidable-wrapper button {
+  position: absolute;
+  top: 50%;
+  margin-top: -12px;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  background-color: transparent;
+  background-image: url("slidable.png");
+  background-repeat: no-repeat;
+  background-size: auto auto;
+  border: none;
+  z-index: 1;
+}
+.slidable-wrapper button.next {
+  background-position: -24px 0;
+  right: -24px;
+}
+.slidable-wrapper button.prev {
+  background-position: 0 0;
+  left: -24px;
+}

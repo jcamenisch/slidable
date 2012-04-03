@@ -34,9 +34,6 @@
     }
     return undefined //nothing implemented for this yet
   }
-}(jQuery));
-
-(function($){
 
   var spriteButton = function(kind, css) {
     css = $.extend({
@@ -47,7 +44,7 @@
       padding: '0',
       border: 'none',
       backgroundColor: 'transparent',
-      backgroundImage: 'url("/javascripts/slidable/slidable.png")',
+      backgroundImage: 'url("slidable.png")',
       backgroundRepeat: 'no-repeat',
       backgroundSize: 'auto auto',
       border: 'none',

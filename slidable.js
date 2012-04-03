@@ -1,4 +1,4 @@
-(function($){
+(function($, undefined){
   $.fn.hiddenDimension = function(){
     if (arguments.length && typeof arguments[0] == 'string') {
       var dimension = arguments[0]
@@ -38,7 +38,7 @@
 
 (function($){
 
-  spriteButton = function(kind, css) {
+  var spriteButton = function(kind, css) {
     css = $.extend({
       position: 'absolute',
       top: '50%',
@@ -49,43 +49,50 @@
       backgroundColor: 'transparent',
       backgroundImage: 'url("/javascripts/slidable/slidable.png")',
       backgroundRepeat: 'no-repeat',
+      backgroundSize: 'auto auto',
       border: 'none',
       zIndex: '1'
     }, css);
     width = +css.width.replace(/[^0-9]/g,'');
     height = +css.height.replace(/[^0-9]/g,'');
-    var kindPositions = { prev: 0, next: 1 };
-    css.backgroundPosition = -width * kindPositions[kind] + 'px 0px';
+
+    css.backgroundPosition = -width * {prev: 0, next: 1}[kind] + 'px 0px';
     css.marginTop = css.marginTop || Math.round(-height/2) + 'px';
+    css[{prev: 'left',next: 'right'}[kind]] = -width + 'px';
     return $('<button />').addClass(kind).css(css);
   }
 
-  var elements;
-
-  var actions = {
-    init: function(options){
-      var options = $.extend({css: {}}, options);
-      options.css.items = options.css.items || {};
-      options.css.wrapper = $.extend({
-        overflow: 'hidden',
+  var defaultOptions = {
+    css: {
+      items: {},
+      wrapper: {
         position: 'relative',
         overflow: 'visible'
-      }, options.css.wrapper );
-      options.css.list = $.extend({
+      },
+      list: {
         position: 'absolute',
         margin: 0,
         left: 0,
         top: 0
-      }, options.css.list );
-      options.css.viewport = $.extend({
+      },
+      viewport: {
         position: 'relative',
         height: '100%',
         overflow: 'hidden',
         padding: 0,
         margin: 0
-      }, options.css.viewport );
+      }
+    }
+  };
 
-      elements.each(function(){
+  var actions = {
+    setDefaults: function(options){
+      $.extend(true, defaultOptions, options);
+    },
+    init: function(options){
+      var options = $.extend(true, {}, defaultOptions, options);
+
+      this.each(function(){
         if (typeof $(this).data('slidable') === 'undefined') $(this).data('slidable', $(this))
         var
           list = $(this).data('slidable'),
@@ -100,42 +107,48 @@
         }, options.css.wrapper ));
 
         var
-          wrapper_width = wrapper.width() || wrapper.hiddenDimension('width'),
-          itemsWide = Math.round(wrapper_width/items.outerWidth()),
-          list_width = itemsWide * items.outerWidth();
-          itemsHigh = Math.round(wrapper.height()/items.outerHeight()),
+          itemWidth = items.hiddenDimension('outerWidth'),
+          itemHeight = items.hiddenDimension('outerHeight'),
+          wrapperWidth = wrapper.hiddenDimension('width'),
+          wrapperHeight = wrapper.hiddenDimension('height'),
+          itemsWide = Math.round(wrapperWidth/itemWidth),
+          listWidth = itemsWide * itemWidth,
+          itemsHigh = Math.round(wrapperHeight/itemHeight),
           vertical = ('vertical' in options) ? options.vertical : (itemsHigh > itemsWide && !options.horizontal),
-          horizontal = !vertical
+          horizontal = !vertical,
+          columns = itemsWide,
+          rows = itemsHigh
+        ;
+        if (vertical)
+          rows = Math.ceil(items.size()/columns)
+        else
+          columns = Math.ceil(items.size()/rows);
 
-        wrapper.css($.extend({
-          width: list_width+'px'
-        }, options.css.wrapper ));
+        wrapper.css($.extend(
+          { height: rows * itemHeight},
+          options.css.wrapper
+        ));
         
-        wrapper_width = wrapper.width() || wrapper.hiddenDimension('width');
-
-        list.css($.extend({width: list_width, height: wrapper.height()}, options.css.list));
-        if (horizontal) {
-          list.css('width', Math.max(
-            +(options.css.list.width || '0').replace(/[^0-9]/g,''),
-            wrapper_width,
-            items.outerWidth() * Math.ceil(items.length/itemsHigh)
-          ));
-        } else {
-          list.css('height', Math.max(
-            +(options.css.list.height || '0').replace(/[^0-9]/g,''),
-            wrapper.height(),
-            items.outerHeight() * Math.ceil(items.length/itemsWide
-          )));
-        }
+        var default_list_css = vertical ?
+          {
+            width: itemWidth * itemsWide,
+            height: itemHeight * Math.max(rows, itemsHigh)
+          } : {
+            width: itemWidth * Math.max(columns, itemsWide),
+            height: itemHeight * itemsHigh
+          }
+        ;
+        list.css($.extend(default_list_css, options.css.list));
         viewport.css(options.css.viewport = $.extend({
-          width: items.outerWidth() * itemsWide + 'px'
+          width: itemWidth * itemsWide + 'px'
         }, options.css.viewport ));
 
         list.slide_increment = options.slide_increment || 1;
         list.slide_position = 0;
         list.max_slide_position = horizontal ?
           Math.max(0, Math.ceil(items.length/itemsHigh) - itemsWide) :
-          Math.max(0, Math.ceil(items.length/itemsWide) - itemsHigh);
+          Math.max(0, Math.ceil(items.length/itemsWide) - itemsHigh)
+        ;
 
         options = $.extend({
           duration: 300 + Math.round(list.slide_increment * items.outerWidth()),
@@ -146,16 +159,21 @@
         if (list.max_slide_position > 0) { // Only set up scrolling buttons if we need to scroll.
         
           list.set_disabled = function(button, disable) {
-            var was_disabled = !!button.attr('disabled'); disable = !!disable
+            var was_disabled = !!button.attr('disabled');
+            disable = !!disable
             if (disable != was_disabled) {
               button.attr('disabled', disable);
-              var sprite_position = +button.css('background-position-x').replace(/px/,'');
-              var move_sprite = (disable ? -2 : 2) * button.outerWidth();
-              button.css('background-position-x', sprite_position+move_sprite+'px')
+              var
+                backgroundPosition = button.css('background-position').split(' '),
+                backgroundXDelta = (disable ? -2 : 2) * button.outerWidth(),
+                newBackgroundX = +backgroundPosition[0].replace(/px/,'') + backgroundXDelta,
+                backgroundY = backgroundPosition[1]
+              ;
+              button.css('background-position', newBackgroundX+'px '+backgroundY);
             }
           }
           list.scrollTo = function(position, wrap) {
-            if(typeof wrap == 'undefined') wrap = false;
+            if (wrap === undefined) wrap = false;
             if (position > list.max_slide_position) {
               position = wrap ? 0 : list.max_slide_position;
             } else if (position < 0) {
@@ -194,32 +212,51 @@
 
           if (horizontal) {
             list.prevButton = wrapper.prepend(
-              spriteButton('prev', $.extend(options.css.buttons, options.css.prevButton))
+              spriteButton('prev', $.extend({}, options.css.buttons, options.css.prevButton))
             ).children().first();
-            list.prevButton
-              .click(function(e){ list.scrollBack() })
-              .css('left',
-                list.prevButton.css('left') == 'auto' ?
-                  '-'+list.prevButton.outerWidth()+'px' :
-                  list.prevButton.css('left')
-              );
-
+            list.prevButton.click(function(e){ list.scrollBack() });
             list.nextButton = wrapper.append(
-              spriteButton('next', $.extend(options.css.buttons, options.css.nextButton))
+              spriteButton('next', $.extend({}, options.css.buttons, options.css.nextButton))
             ).children().last();
-            list.nextButton
-              .click(function(e){ list.scrollForward() })
-              .css('right', list.nextButton.css('right') == 'auto' ?
-                '-'+list.prevButton.outerWidth()+'px' :
-                list.nextButton.css('right')
-              );
+            list.nextButton.click(function(e){ list.scrollForward() });
             list.scrollTo(0); // Disable prev button and, if need be, next button.
           }
         }
 
+        if (list.options.pager) list.pager = $(list.options.pager, list.parent().parent().parent());
+        if (list.pager.length && list.max_slide_position) {
+          var
+            pager = list.pager,
+            button_el = pager.is('ul') ? 'li' : 'span',
+            positions = [], last_position = list.max_slide_position
+          ;
+
+          for (var i = 0; i < last_position; i += list.slide_increment) positions.push(i);
+          positions.push(last_position);
+          $.each(positions, function(i, position) {
+            var button = $('<'+button_el+' />'), a = $('<a />');
+            a.attr({
+              href: '#position-'+position,
+              'class': position === 0 ? 'active' : '',
+              'data-index': position
+            });
+            a.click(function(){
+              list.scrollTo($(this).data('index'));
+              list.autoRotate(false);
+              return false;
+            });
+            a.appendTo(button);
+            button.appendTo(pager);
+          });
+
+          list.options.beforeScroll = function(position){
+            $('.active', pager).removeClass('active');
+            $('a[data-index='+(position)+']', pager).addClass('active');
+          }
+        }
         list.autoRotate = function(delay){
           if (typeof list.timeout === 'number') clearTimeout(list.timeout);
-          if (typeof delay !== 'undefined') list.options.autoRotate = delay;
+          if (delay !== undefined) list.options.autoRotate = delay;
           if (list.options.autoRotate) {
             list.timeout = setTimeout(function(){
               list.scrollForward([true]);
@@ -229,21 +266,24 @@
         list.autoRotate();
       });
 
-      return elements;
+      return this;
     }
   }
 
+  $.slidable = function(action, options){
+    if (typeof actions[action] === 'function') return actions[action](options);
+  };
+
   $.fn.slidable = function(action, options){
-    if (typeof action != 'string') {
+    if (typeof action !== 'string') {
       options = action;
-      action = 'init'
+      action = 'init';
     }
-    elements = $(this);
-    if (elements && elements.data('slidable') && elements.data('slidable')[action]) {
-      return elements.data('slidable')[action](options);
+    if (this.length && this.data('slidable') && this.data('slidable')[action]) {
+      return this.data('slidable')[action].call(this, options);
     } else {
-      return actions[action](options);
+      return actions[action].call(this, options);
     }
-  }
+  };
 
 })(jQuery);

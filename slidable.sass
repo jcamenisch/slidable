@@ -20,6 +20,7 @@ $slidable-horizontal-gutter: $slidable-gutter !default
   button
     position: absolute
     top: 50%
+    cursor: pointer
     margin-top: -$slidable-button-height/2
     width: $slidable-button-width
     height: $slidable-button-height
@@ -41,6 +42,8 @@ $slidable-horizontal-gutter: $slidable-gutter !default
       background-position: 0 0
       &.disabled
         background-position: -2*$slidable-button-width 0
+    &.disabled
+      cursor: default
 
   .slidable-viewport
     position: relative

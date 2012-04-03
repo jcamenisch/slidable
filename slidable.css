@@ -5,6 +5,7 @@
 .slidable-wrapper button {
   position: absolute;
   top: 50%;
+  cursor: pointer;
   margin-top: -12px;
   width: 24px;
   height: 24px;
@@ -30,6 +31,9 @@
 }
 .slidable-wrapper button.prev.disabled {
   background-position: -48px 0;
+}
+.slidable-wrapper button.disabled {
+  cursor: default;
 }
 .slidable-wrapper .slidable-viewport {
   position: relative;

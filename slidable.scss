@@ -1,11 +1,23 @@
+$slidable-item-height: 100px !default;
+$slidable-item-width: 100px !default;
+
+$slidable-rows: 1 !default;
+$slidable-button-size: 24px !default;
+
+$slidable-gutter: 10px !default;
+
+$slidable-vertical-gutter: $slidable-gutter !default;
+$slidable-horizontal-gutter: $slidable-gutter !default;
+
 .slidable-wrapper {
-  $button-size: 24px;
+  position: relative;
+  overflow: visible;
   button {
     position: absolute;
     top: 50%;
-    margin-top: -$button-size / 2;
-    width: $button-size;
-    height: $button-size;
+    margin-top: -$slidable-button-size / 2;
+    width: $slidable-button-size;
+    height: $slidable-button-size;
     padding: 0;
     border: none;
     background-color: transparent;
@@ -15,8 +27,26 @@
     border: none;
     z-index: 1;
     &.next {
-      background-position: -$button-size 0;
-      right: -$button-size; }
+      right: -$slidable-button-size;
+      background-position: -$slidable-button-size 0;
+      &.disabled {
+        background-position: -3 * $slidable-button-size 0; } }
     &.prev {
+      left: -$slidable-button-size;
       background-position: 0 0;
-      left: -$button-size; } } }
+      &.disabled {
+        background-position: -2 * $slidable-button-size 0; } } }
+  .slidable-viewport {
+    position: relative;
+    overflow: hidden;
+    padding: 0;
+    margin: 0; }
+  .slidable-list {
+    position: relative;
+    margin: 0;
+    left: 0;
+    top: 0;
+    height: $slidable-rows * ($slidable-item-height + $slidable-vertical-gutter) - $slidable-vertical-gutter; }
+  .slidable-item {
+    height: $slidable-item-height;
+    width: $slidable-item-width; } }

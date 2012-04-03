@@ -1,3 +1,7 @@
+.slidable-wrapper {
+  position: relative;
+  overflow: visible;
+}
 .slidable-wrapper button {
   position: absolute;
   top: 50%;
@@ -14,10 +18,33 @@
   z-index: 1;
 }
 .slidable-wrapper button.next {
-  background-position: -24px 0;
   right: -24px;
+  background-position: -24px 0;
+}
+.slidable-wrapper button.next.disabled {
+  background-position: -72px 0;
 }
 .slidable-wrapper button.prev {
-  background-position: 0 0;
   left: -24px;
+  background-position: 0 0;
+}
+.slidable-wrapper button.prev.disabled {
+  background-position: -48px 0;
+}
+.slidable-wrapper .slidable-viewport {
+  position: relative;
+  overflow: hidden;
+  padding: 0;
+  margin: 0;
+}
+.slidable-wrapper .slidable-list {
+  position: relative;
+  margin: 0;
+  left: 0;
+  top: 0;
+  height: 100px;
+}
+.slidable-wrapper .slidable-item {
+  height: 100px;
+  width: 100px;
 }

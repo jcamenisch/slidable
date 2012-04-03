@@ -35,32 +35,11 @@
     return undefined //nothing implemented for this yet
   }
 
-  var spriteButton = function(kind, css) {
-    return $('<button />').addClass(kind).css(css);
+  var spriteButton = function(kind) {
+    return $('<button class="'+kind+'" />');
   }
 
-  var defaultOptions = {
-    css: {
-      items: {},
-      wrapper: {
-        position: 'relative',
-        overflow: 'visible'
-      },
-      list: {
-        position: 'absolute',
-        margin: 0,
-        left: 0,
-        top: 0
-      },
-      viewport: {
-        position: 'relative',
-        height: '100%',
-        overflow: 'hidden',
-        padding: 0,
-        margin: 0
-      }
-    }
-  };
+  var defaultOptions = {css: { items: {}, viewport: {}, list: {}}};
 
   var actions = {
     setDefaults: function(options){
@@ -70,29 +49,28 @@
       var options = $.extend(true, {}, defaultOptions, options);
 
       this.each(function(){
-        if (typeof $(this).data('slidable') === 'undefined') $(this).data('slidable', $(this))
         var
-          list = $(this).data('slidable'),
+          list = $(this),
           items = list.children(),
           viewport = list.wrap('<div class="slidable-viewport" />').parent(),
           wrapper = viewport.wrap('<div class="slidable-wrapper" />').parent()
         ;
+        // TO-DO: if list.data('slidable') is defined, we're probably going to have problems.
+        if (list.data('slidable') === undefined) list.data('slidable', list);
 
-        items.css(options.css.items);
-        wrapper.css($.extend({
-          height: items.outerHeight()+'px'
-        }, options.css.wrapper ));
+        list.addClass('slidable-list');
+        items.addClass('slidable-item');
 
         var
+          vertical = ('columns' in options),
+          horizontal = !vertical,
           itemWidth = items.hiddenDimension('outerWidth'),
           itemHeight = items.hiddenDimension('outerHeight'),
           wrapperWidth = wrapper.hiddenDimension('width'),
           wrapperHeight = wrapper.hiddenDimension('height'),
           itemsWide = Math.round(wrapperWidth/itemWidth),
           listWidth = itemsWide * itemWidth,
-          itemsHigh = Math.round(wrapperHeight/itemHeight),
-          vertical = ('vertical' in options) ? options.vertical : (itemsHigh > itemsWide && !options.horizontal),
-          horizontal = !vertical,
+          itemsHigh = options.rows || Math.round(wrapperHeight/itemHeight),
           columns = itemsWide,
           rows = itemsHigh
         ;
@@ -100,18 +78,14 @@
           rows = Math.ceil(items.size()/columns)
         else
           columns = Math.ceil(items.size()/rows);
-
-        wrapper.css(options.css.wrapper);
         
-        var default_list_css = vertical ?
-          {
+        list.css(
+          vertical ? {
             width: itemWidth * itemsWide
           } : {
             width: itemWidth * Math.max(columns, itemsWide)
           }
-        ;
-        list.css($.extend(default_list_css, options.css.list));
-        viewport.css(options.css.viewport);
+        );
 
         list.slide_increment = options.slide_increment || 1;
         list.slide_position = 0;
@@ -131,15 +105,10 @@
           list.set_disabled = function(button, disable) {
             var was_disabled = !!button.attr('disabled');
             disable = !!disable
-            if (disable != was_disabled) {
+            if (disable !== was_disabled) {
               button.attr('disabled', disable);
-              var
-                backgroundPosition = button.css('background-position').split(' '),
-                backgroundXDelta = (disable ? -2 : 2) * button.outerWidth(),
-                newBackgroundX = +backgroundPosition[0].replace(/px/,'') + backgroundXDelta,
-                backgroundY = backgroundPosition[1]
-              ;
-              button.css('background-position', newBackgroundX+'px '+backgroundY);
+              if (disable) button.addClass('.disabled');
+              else button.removeClass('.disabled');
             }
           }
           list.scrollTo = function(position, wrap) {
@@ -182,11 +151,11 @@
 
           if (horizontal) {
             list.prevButton = wrapper.prepend(
-              spriteButton('prev', $.extend({}, options.css.buttons, options.css.prevButton))
+              spriteButton('prev')
             ).children().first();
             list.prevButton.click(function(e){ list.scrollBack() });
             list.nextButton = wrapper.append(
-              spriteButton('next', $.extend({}, options.css.buttons, options.css.nextButton))
+              spriteButton('next')
             ).children().last();
             list.nextButton.click(function(e){ list.scrollForward() });
             list.scrollTo(0); // Disable prev button and, if need be, next button.

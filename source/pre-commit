@@ -11,8 +11,13 @@
 sass_path=source
 css_path=css
 
-compass compile --sass-dir=$sass_path --css-dir=$css_path --output-style=expanded --no-line-comments
+compass compile --sass-dir=$sass_path --css-dir=$css_path --output-style=expanded --no-line-comments && \
 git add $css_path/slidable.css
 
-sass-convert $sass_path/slidable.sass $sass_path/slidable.scss
+[[ -d tmp ]] || mkdir tmp && \
+cp $sass_path/slidable.sass tmp/slidable.min.sass && \
+compass compile --sass-dir=tmp --css-dir=$css_path --output-style=compressed --no-line-comments && \
+git add $css_path/slidable.min.css
+
+sass-convert $sass_path/slidable.sass $sass_path/slidable.scss && \
 git add $sass_path/slidable.scss

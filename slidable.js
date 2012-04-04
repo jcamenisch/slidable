@@ -52,7 +52,10 @@
           }
         );
 
-        list.slide_increment = options.slide_increment || 1;
+        list._slide_increment = options.slide_increment || 'auto';
+        list.slide_increment = function() {
+          return typeof this._slide_increment === 'number' ? this._slide_increment : itemsWide - 1;
+        }
         list.slide_position = 0;
         list.max_slide_position = horizontal ?
           Math.max(0, Math.ceil(items.length/itemsHigh) - itemsWide) :
@@ -60,7 +63,7 @@
         ;
 
         options = $.extend({
-          duration: 300 + Math.round(list.slide_increment * items.outerWidth(true)),
+          duration: 300 + Math.round(list.slide_increment() * items.outerWidth(true)),
           easing: 'swing'
         }, options);
         list.options = options;
@@ -106,12 +109,12 @@
 
           list.scrollBack = function(wrap) {
             if (typeof wrap === 'undefined') wrap = false;
-            list.scrollBy(-list.slide_increment, wrap);
+            list.scrollBy(-this.slide_increment(), wrap);
           }
 
           list.scrollForward = function(wrap) {
             if (typeof wrap === 'undefined') wrap = false;
-            list.scrollBy(list.slide_increment, wrap); 
+            list.scrollBy(this.slide_increment(), wrap); 
           }
 
           if (horizontal) {
@@ -136,7 +139,7 @@
               positions = [], last_position = list.max_slide_position
             ;
 
-            for (var i = 0; i < last_position; i += list.slide_increment) positions.push(i);
+            for (var i = 0; i < last_position; i += list.slide_increment()) positions.push(i);
             positions.push(last_position);
             $.each(positions, function(i, position) {
               var button = $('<'+button_el+' />'), a = $('<a />');

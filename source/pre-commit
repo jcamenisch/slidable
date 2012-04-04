@@ -5,6 +5,8 @@
 # To run this before every commit, run this from the repo directory:
 #
 #    ln source/pre-commit .git/hooks/
+#
+# Dependencies: Compass; see http://compass-style.org/
 
 sass_path=source
 css_path=css

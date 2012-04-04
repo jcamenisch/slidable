@@ -1,0 +1,16 @@
+#!/bin/bash
+
+# This script assumes styling will be authored in SASS, and converts
+# that to both css and scss for publishing.
+# To run this before every commit, run this from the repo directory:
+#
+#    ln source/pre-commit .git/hooks/
+
+sass_path=source
+css_path=css
+
+compass compile --sass-dir=$sass_path --css-dir=$css_path --output-style=expanded --no-line-comments
+git add $css_path/slidable.css
+
+sass-convert $sass_path/slidable.sass $sass_path/slidable.scss
+git add $sass_path/slidable.scss
